@@ -2,8 +2,11 @@ package com.restapai.restApi.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 @Entity
 @Table(name = "comment", uniqueConstraints = @UniqueConstraint(columnNames = "email"))
 public class Comment {

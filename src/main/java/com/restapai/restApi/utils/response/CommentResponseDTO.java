@@ -17,5 +17,5 @@ public class CommentResponseDTO {
 
     private String body;
 
-    private Post post;
+    private String postTitle;
 }

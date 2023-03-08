@@ -1,6 +1,9 @@
 package com.restapai.restApi.service.impl;
 
 import com.restapai.restApi.entity.Comment;
+import com.restapai.restApi.entity.Post;
+import com.restapai.restApi.errors.ResourceNotFoundException;
+import com.restapai.restApi.repository.PostRepository;
 import com.restapai.restApi.utils.request.CommentDTO;
 import com.restapai.restApi.repository.CommentRepository;
 import com.restapai.restApi.service.CommentService;
@@ -19,39 +22,45 @@ public class CommentServiceImpl implements CommentService {
 
 
     private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
     @Override
     public List<CommentResponseDTO> getAll() {
         List<Comment> comments=commentRepository.findAll();
-        return comments.stream().map(c->mapperToDTO(c)).collect(Collectors.toList()) ;
+        return comments.stream().map(c->mapperToCommentDTO(c)).collect(Collectors.toList()) ;
     }
 
     @Override
     public Optional<CommentResponseDTO> findById(Long id) {
+
+        commentRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Comentario não encontrado!"));
         var comment= commentRepository.findById(id).get();
 
-        return Optional.of(mapperToDTO(comment));
+        return Optional.of(mapperToCommentDTO(comment));
     }
 
     @Override
     public CommentResponseDTO save(CommentDTO dto) {
-
+        Post p= postRepository.findById(dto.getPostId()).orElseThrow(()-> new ResourceNotFoundException("Post não encontrado!" +dto.getPostId()));
         Comment cmt= new Comment();
         cmt.setName(dto.getName());
         cmt.setEmail(dto.getEmail());
         cmt.setBody(dto.getBody());
+        cmt.setPost(p);
         //cmt.setPost(dto.getPost());
         var saveComment= commentRepository.save(cmt);
-        return mapperToDTO(commentRepository.save(saveComment));
+        return mapperToCommentDTO(commentRepository.save(saveComment));
     }
 
     @Override
     public CommentResponseDTO update(CommentDTO dto, Long id) {
-        var comment= commentRepository.findById(id).get();
+        var comment= commentRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Comentario não encontrado para actualizar!"));
+        var p= postRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Post não encontrado!"));
         comment.setEmail(dto.getEmail());
         comment.setBody(dto.getBody());
         comment.setName(dto.getName());
+        comment.setPost(p);
 
-        return mapperToDTO(commentRepository.save(comment));
+        return mapperToCommentDTO(commentRepository.save(comment));
     }
 
     @Override
@@ -60,13 +69,13 @@ public class CommentServiceImpl implements CommentService {
         return "Apagado";
     }
 
-    private CommentResponseDTO mapperToDTO(Comment comment){
+    public static CommentResponseDTO mapperToCommentDTO(Comment comment){
         var dto= new CommentResponseDTO();
         dto.setId(comment.getId());
         dto.setBody(comment.getBody());
         dto.setEmail(comment.getEmail());
         dto.setName(comment.getName());
-        dto.setPost(comment.getPost());
+        dto.setPostTitle(comment.getPost().getTitle());
         return dto;
     }
 
