@@ -37,6 +37,7 @@ public class PostServiceImpl implements PostService {
         p.setDescription(dto.getDescription());
         p.setTitle(dto.getTitle());
         p.setContent(dto.getContent());
+        p.setMaximumOfComments(dto.getMaximumOfComments());
         Post saved= postRepository.save(p);
 
         return mapperToPostDTO(saved);
@@ -65,7 +66,8 @@ public class PostServiceImpl implements PostService {
        dto.setId(entity.getId());
        dto.setContent(entity.getContent());
        dto.setTitle(entity.getTitle());
-       if (entity.getComments().size()>0){
+       dto.setMaximumOfComments(entity.getMaximumOfComments());
+       if (entity.getComments()!=null && entity.getComments().size()>0){
            dto.setComments(entity.getComments().stream().map(c->mapperToCommentDTO(c)).collect(Collectors.toSet()));
        }
        return dto;
